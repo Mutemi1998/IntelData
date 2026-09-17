@@ -1,0 +1,2 @@
+# IntelData
+Hybrid Soc Platform
