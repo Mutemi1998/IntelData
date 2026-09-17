@@ -1,0 +1,375 @@
+
+
+{# ── Status overview ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        Brand protection overview
+      </div>
+      <div class="card-desc">Active monitoring across domains, social media, dark web, and app stores.</div>
+    </div>
+    <a href="{% url 'brand-protection' %}" class="btn btn-primary btn-sm">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      View dashboard
+    </a>
+  </div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px">
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--red)">{{ brand_threats|default:"7" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Active threats</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--amber)">{{ brand_spoofed_domains|default:"12" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Spoofed domains</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--accent)">{{ brand_dark_web|default:"3" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Dark web</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--purple)">{{ brand_social|default:"5" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Social media</div>
+      </div>
+    </div>
+    <div style="background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:10px;padding:12px 16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--accent)">Monitoring active</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Last scan 14 minutes ago · Scanning every 6 hours</div>
+        </div>
+        <a href="{% url 'brand-protection' %}" style="margin-left:auto;font-size:12px;color:var(--accent)">View all findings →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Brand identity ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        Brand identity
+      </div>
+      <div class="card-desc">The assets and keywords we monitor on your behalf.</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="field-row cols2">
+      <div class="field">
+        <label>Brand / company name</label>
+        <input type="text" value="{{ tenant.name }}" placeholder="Acme Inc">
+      </div>
+      <div class="field">
+        <label>Primary domain</label>
+        <input type="text" value="{{ brand_primary_domain }}" placeholder="acme.com">
+      </div>
+    </div>
+    <div class="field-row cols2">
+      <div class="field">
+        <label>Additional domains to protect <span style="color:var(--muted);font-weight:400">(one per line)</span></label>
+        <textarea rows="3" placeholder="acme.co.ke&#10;acme.io&#10;getacme.com">{{ brand_additional_domains }}</textarea>
+      </div>
+      <div class="field">
+        <label>Brand keywords <span style="color:var(--muted);font-weight:400">(product names, trademarks)</span></label>
+        <textarea rows="3" placeholder="AcmePay&#10;AcmeCloud&#10;AcmeShield">{{ brand_keywords }}</textarea>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Executive names to monitor <span style="color:var(--muted);font-weight:400">(CEO, CTO, CFO — one per line)</span></label>
+        <textarea rows="2" placeholder="John Doe&#10;Jane Smith">{{ brand_executives }}</textarea>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:4px">
+      <button class="btn btn-primary btn-sm" onclick="showToast('Brand identity saved','success',2000)">Save changes</button>
+    </div>
+  </div>
+</div>
+
+{# ── Domain monitoring ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/>
+          <path d="M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/>
+        </svg>
+        Domain monitoring
+      </div>
+      <div class="card-desc">Detect typosquatting, lookalike domains, phishing sites, and homoglyph attacks.</div>
+    </div>
+    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Typosquatting detection</strong>
+          <span>Catch domains like acmee.com, acme-support.com, amce.com</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Homoglyph detection</strong>
+          <span>Unicode character substitution attacks — аcme.com using Cyrillic characters</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Newly registered domains</strong>
+          <span>Alert on domains registered within the last 30 days containing your brand</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>SSL certificate transparency logs</strong>
+          <span>Watch CT logs for TLS certificates issued for domains containing your brand</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row" style="border-bottom:none">
+        <div class="toggle-info">
+          <strong>Phishing page detection</strong>
+          <span>Detect cloned login pages and credential harvesting sites impersonating you</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="field-row" style="margin-top:16px">
+      <div class="field">
+        <label>TLD watchlist <span style="color:var(--muted);font-weight:400">(monitor these TLDs for your brand name)</span></label>
+        <input type="text" value=".com, .net, .org, .io, .co, .ke, .info, .biz" placeholder=".com, .net, .org">
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Dark web monitoring ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+        </svg>
+        Dark web monitoring
+      </div>
+      <div class="card-desc">Track your brand, domains, and credentials on dark web forums, paste sites, and markets.</div>
+    </div>
+    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Credential leak detection</strong>
+          <span>Alert when employee emails or passwords appear in breach dumps</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Brand mention monitoring</strong>
+          <span>Track your brand name on Tor forums and paste sites</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Data for sale alerts</strong>
+          <span>Detect when your customer or internal data is listed for sale on markets</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row" style="border-bottom:none">
+        <div class="toggle-info">
+          <strong>Source code leak detection</strong>
+          <span>Monitor for proprietary code or API keys on paste sites and hacker forums</span>
+        </div>
+        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="field-row" style="margin-top:16px">
+      <div class="field">
+        <label>Email domains to monitor for credential leaks</label>
+        <input type="text" placeholder="@acme.com, @acmepay.com" value="{{ brand_email_domains }}">
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Social media monitoring ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 2H3v16h5v4l4-4h5l4-4V2z"/>
+        </svg>
+        Social media monitoring
+      </div>
+      <div class="card-desc">Detect impersonation accounts, scam campaigns, and brand misuse on social platforms.</div>
+    </div>
+    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;flex-direction:column;gap:0;margin-bottom:16px">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Impersonation account detection</strong>
+          <span>Fake accounts posing as your brand or executives on social platforms</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Scam campaign detection</strong>
+          <span>Identify giveaway scams, crypto fraud, and phishing campaigns using your brand</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row" style="border-bottom:none">
+        <div class="toggle-info">
+          <strong>Unauthorised logo / trademark use</strong>
+          <span>Detect misuse of your logo, name, or trademarks in posts and profiles</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Platforms to monitor</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">
+          {% for p in platforms %}
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;background:var(--s2);border:1px solid var(--border);padding:6px 12px;border-radius:6px">
+            <input type="checkbox" checked> {{ p }}
+          </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── App store monitoring ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+        App store monitoring
+      </div>
+      <div class="card-desc">Detect fake or malicious mobile apps using your brand name or logo.</div>
+    </div>
+    <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Google Play Store</strong>
+          <span>Scan for fake apps on Android Play Store</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Apple App Store</strong>
+          <span>Scan for fake apps on iOS App Store</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row" style="border-bottom:none">
+        <div class="toggle-info">
+          <strong>Third-party APK sites</strong>
+          <span>Monitor APKPure, APKMirror, and similar unofficial Android distribution sites</span>
+        </div>
+        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Alerts & notifications ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Alerts & notifications
+      </div>
+      <div class="card-desc">How and when your team is notified about brand threats.</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="field-row cols2">
+      <div class="field">
+        <label>Alert threshold</label>
+        <select>
+          <option value="all" selected>All findings</option>
+          <option value="medium">Medium risk and above</option>
+          <option value="high">High risk and above</option>
+          <option value="critical">Critical only</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Digest frequency</label>
+        <select>
+          <option value="realtime">Real-time</option>
+          <option value="daily" selected>Daily digest</option>
+          <option value="weekly">Weekly digest</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Notify these email addresses <span style="color:var(--muted);font-weight:400">(comma-separated)</span></label>
+        <input type="text" placeholder="security@company.com, brand@company.com" value="{{ brand_notify_emails }}">
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Email notifications</strong>
+          <span>Send brand threat alerts to the addresses above</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Slack notifications</strong>
+          <span>Post brand alerts to a Slack channel (requires Slack integration)</span>
+        </div>
+        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row" style="border-bottom:none">
+        <div class="toggle-info">
+          <strong>Webhook</strong>
+          <span>POST alert data to a custom endpoint for your own tooling</span>
+        </div>
+        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-primary btn-sm" onclick="showToast('Brand protection settings saved','success',2000)">Save changes</button>
+    </div>
+  </div>
+</div>

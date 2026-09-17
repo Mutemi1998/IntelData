@@ -1,0 +1,380 @@
+
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Scan overview
+      </div>
+      <div class="card-desc">Current vulnerability posture across your monitored assets.</div>
+    </div>
+    <button class="btn btn-primary btn-sm" onclick="openModal('modal-scan-now')">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polygon points="5 3 19 12 5 21 5 3"/>
+      </svg>
+      Run scan now
+    </button>
+  </div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:16px">
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:var(--red)">{{ vuln_critical|default:"0" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Critical</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:var(--amber)">{{ vuln_high|default:"0" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">High</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:var(--accent)">{{ vuln_medium|default:"0" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Medium</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:24px;font-weight:800;color:var(--green)">{{ vuln_low|default:"0" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Low</div>
+      </div>
+    </div>
+    <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;padding:12px 16px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        <div>
+          <div style="font-size:13px;font-weight:600;color:#10b981">Last scan: {{ last_scan_time|default:"Never" }}</div>
+          <div style="font-size:11px;color:var(--muted);margin-top:2px">Next scheduled scan: {{ next_scan_time|default:"Not scheduled" }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Scan engine ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        Scan engine
+      </div>
+      <div class="card-desc">Choose which engine powers vulnerability detection.</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;flex-direction:column;gap:10px">
+
+      <div class="int-card" style="cursor:pointer;border:1px solid rgba(59,130,246,.3);background:rgba(59,130,246,.04)">
+        <div class="int-icon" style="background:rgba(59,130,246,.1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="int-name">Wazuh</div>
+          <div class="int-desc">Native Wazuh SCA and vulnerability detection module</div>
+        </div>
+        <div class="int-right">
+          <span class="badge green"><span class="badge-dot"></span>Active</span>
+        </div>
+      </div>
+
+      <div class="int-card" style="opacity:.6">
+        <div class="int-icon" style="background:rgba(100,116,139,.1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="int-name">OpenVAS</div>
+          <div class="int-desc">Open source full-featured vulnerability scanner</div>
+        </div>
+        <div class="int-right">
+          <button class="btn btn-ghost btn-sm">Configure</button>
+        </div>
+      </div>
+
+      <div class="int-card" style="opacity:.6">
+        <div class="int-icon" style="background:rgba(100,116,139,.1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+        <div style="flex:1">
+          <div class="int-name">Nessus</div>
+          <div class="int-desc">Tenable Nessus professional vulnerability scanner</div>
+        </div>
+        <div class="int-right">
+          <button class="btn btn-ghost btn-sm">Configure</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{# ── Scan schedule ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+        Scan schedule
+      </div>
+      <div class="card-desc">Configure how often vulnerability scans run automatically.</div>
+    </div>
+    <label class="switch">
+      <input type="checkbox" {% if scan_scheduled %}checked{% endif %}>
+      <span class="slider"></span>
+    </label>
+  </div>
+  <div class="card-body">
+    <div class="field-row cols2">
+      <div class="field">
+        <label>Frequency</label>
+        <select>
+          <option value="daily" {% if scan_frequency == "daily" %}selected{% endif %}>Daily</option>
+          <option value="weekly" {% if scan_frequency == "weekly" %}selected{% endif %}>Weekly</option>
+          <option value="biweekly" {% if scan_frequency == "biweekly" %}selected{% endif %}>Every 2 weeks</option>
+          <option value="monthly" {% if scan_frequency == "monthly" %}selected{% endif %}>Monthly</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Time (UTC)</label>
+        <input type="time" value="{{ scan_time|default:'02:00' }}">
+      </div>
+    </div>
+    <div class="field-row cols2">
+      <div class="field">
+        <label>Day of week <span style="color:var(--muted);font-weight:400">(if weekly)</span></label>
+        <select>
+          <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+          <option>Thursday</option><option>Friday</option><option>Saturday</option><option>Sunday</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Timezone</label>
+        <select>
+          <option value="UTC">UTC</option>
+          <option value="Africa/Nairobi" selected>Africa/Nairobi (EAT +3)</option>
+          <option value="Europe/London">Europe/London</option>
+          <option value="America/New_York">America/New_York</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Scan scope ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Scan scope
+      </div>
+      <div class="card-desc">Define which assets and IP ranges are included in scans.</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="field-row">
+      <div class="field">
+        <label>Scan target</label>
+        <select>
+          <option value="all_agents">All enrolled agents</option>
+          <option value="ip_range">IP range</option>
+          <option value="specific">Specific hosts</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row cols2">
+      <div class="field">
+        <label>IP ranges <span style="color:var(--muted);font-weight:400">(CIDR supported, one per line)</span></label>
+        <textarea rows="3" placeholder="192.168.1.0/24&#10;10.0.0.1&#10;172.16.0.0/16">{{ scan_ip_ranges }}</textarea>
+      </div>
+      <div class="field">
+        <label>Excluded IPs / hosts</label>
+        <textarea rows="3" placeholder="192.168.1.1&#10;10.0.0.5">{{ scan_excluded }}</textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Scan checks ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="9 11 12 14 22 4"/>
+          <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+        </svg>
+        Scan checks
+      </div>
+      <div class="card-desc">Select which checks are performed during each scan.</div>
+    </div>
+    <div class="field" style="margin:0;min-width:160px">
+      <select style="margin:0">
+        <option>Standard profile</option>
+        <option>Light — ports only</option>
+        <option>Deep — full checks</option>
+      </select>
+    </div>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;flex-direction:column;gap:0">
+
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Port scanning</strong>
+          <span>Discover open ports and running services on scanned hosts</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>CVE detection</strong>
+          <span>Match installed packages and software against the CVE database</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Security configuration audit (SCA)</strong>
+          <span>Check system configuration against CIS benchmarks and security policies</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Compliance checks</strong>
+          <span>PCI-DSS, ISO 27001, HIPAA, and GDPR baseline controls</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Rootkit detection</strong>
+          <span>Scan for known rootkits, hidden processes, and suspicious kernel modules</span>
+        </div>
+        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>File integrity monitoring (FIM)</strong>
+          <span>Alert on unexpected changes to critical system files and directories</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row" style="border-bottom:none">
+        <div class="toggle-info">
+          <strong>Network anomaly detection</strong>
+          <span>Detect unusual traffic patterns and unauthorised connections</span>
+        </div>
+        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{# ── Alerts & reporting ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Alerts & reporting
+      </div>
+      <div class="card-desc">When and how to notify your team about scan results.</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="field-row cols2">
+      <div class="field">
+        <label>Minimum severity to alert</label>
+        <select>
+          <option value="critical">Critical only</option>
+          <option value="high" selected>High and above</option>
+          <option value="medium">Medium and above</option>
+          <option value="low">All severities</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Report format</label>
+        <select>
+          <option value="pdf">PDF</option>
+          <option value="csv">CSV</option>
+          <option value="json">JSON</option>
+          <option value="html">HTML</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Notify these email addresses <span style="color:var(--muted);font-weight:400">(comma-separated)</span></label>
+        <input type="text" placeholder="soc@company.com, cto@company.com" value="{{ vuln_notify_emails }}">
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Email report after each scan</strong>
+          <span>Send a summary to team members when a scan completes</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Alert on new critical CVEs</strong>
+          <span>Immediate alert when a CVSS 9.0+ vulnerability is found on any asset</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row" style="border-bottom:none">
+        <div class="toggle-info">
+          <strong>Weekly digest</strong>
+          <span>Summary of all findings sent every Monday morning</span>
+        </div>
+        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── Run scan modal ── #}
+<div class="modal-backdrop" id="modal-scan-now">
+  <div class="modal">
+    <div class="modal-title">Run vulnerability scan</div>
+    <div class="modal-sub">This will trigger an immediate scan outside the schedule.</div>
+    <div class="field-row">
+      <div class="field">
+        <label>Scan target</label>
+        <select>
+          <option>All enrolled agents</option>
+          <option>Specific agent group</option>
+          <option>Custom IP range</option>
+        </select>
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Scan depth</label>
+        <select>
+          <option>Standard — CVE checks + SCA</option>
+          <option>Light — ports and banners only</option>
+          <option>Deep — full exploit checks</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-scan-now')">Cancel</button>
+      <button class="btn btn-primary" onclick="closeModal('modal-scan-now');showToast('Scan started','success',2000)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        Start scan
+      </button>
+    </div>
+  </div>
+</div>

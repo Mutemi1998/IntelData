@@ -1,0 +1,32 @@
+/* ════════════════════════════════════════════════════════
+   INTELDATA SETTINGS UI
+   Main stylesheet — imports all modules
+   ════════════════════════════════════════════════════════ */
+
+/* Variables & colors */
+@import url('variables.css');
+
+/* Layout & typography */
+@import url('base.css');
+
+/* Components */
+@import url('components.css');
+
+/* Navigation */
+@import url('sidebar.css');
+@import url('topbar.css');
+
+/* Forms & inputs */
+@import url('forms.css');
+
+/* Modals & tables */
+@import url('modals-tables.css');
+
+/* Wazuh agents */
+@import url('wazuh-agents.css'); 
+
+/* Billing section */
+@import url('billing.css');
+
+/* Responsive */
+@import url('responsive.css');

@@ -1,0 +1,58 @@
+/* ════════════════════════════════════════════════════════
+   TOP NAVIGATION BAR STYLES
+   ════════════════════════════════════════════════════════ */
+
+.topbar {
+  height: var(--topbar-height);
+  background: var(--s1);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  gap: 16px;
+}
+
+.topbar-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.topbar-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  color: var(--text);
+  margin: 0;
+}
+
+.topbar-breadcrumb {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 4px 0 0;
+  line-height: 1.4;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .topbar {
+    padding: 0 16px;
+    flex-wrap: wrap;
+  }
+
+  .topbar-title {
+    font-size: 14px;
+  }
+
+  .topbar-breadcrumb {
+    font-size: 11px;
+  }
+
+  .btn {
+    font-size: 11px;
+    padding: 6px 12px;
+  }
+}

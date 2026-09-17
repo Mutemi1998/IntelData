@@ -1,0 +1,387 @@
+
+
+{# ── Agent summary stats ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Deploy Wazuh Agent
+      </div>
+      <div class="card-desc">
+        Install the Wazuh agent on your infrastructure for real-time monitoring.
+        The agent reports to <code style="background:var(--s3);padding:1px 6px;border-radius:4px;font-size:12px">{{ wazuh_manager_ip }}</code>.
+      </div>
+    </div>
+    <span class="badge green"><span class="badge-dot"></span>{{ wazuh_status|default:"Ready" }}</span>
+  </div>
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:18px">
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--green)">{{ agents_active|default:"0" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Active</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--red)">{{ agents_disconnected|default:"0" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Disconnected</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--amber)">{{ agents_pending|default:"0" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Pending</div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:14px;text-align:center">
+        <div style="font-size:22px;font-weight:800;color:var(--muted2)">{{ agents_never|default:"0" }}</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">Never connected</div>
+      </div>
+    </div>
+
+    {# OS install tabs #}
+    <div style="display:flex;gap:4px;border-bottom:1px solid var(--border);margin-bottom:16px">
+      <div style="padding:8px 14px;font-size:12px;font-weight:600;color:var(--accent);border-bottom:2px solid var(--accent);margin-bottom:-1px;cursor:pointer" onclick="agentTab(this,'os-linux')">Linux</div>
+      <div style="padding:8px 14px;font-size:12px;font-weight:600;color:var(--muted2);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer" onclick="agentTab(this,'os-windows')">Windows</div>
+      <div style="padding:8px 14px;font-size:12px;font-weight:600;color:var(--muted2);border-bottom:2px solid transparent;margin-bottom:-1px;cursor:pointer" onclick="agentTab(this,'os-macos')">macOS</div>
+    </div>
+
+    {# Linux #}
+    <div id="os-linux" class="os-pane">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Ubuntu / Debian</p>
+      <div style="position:relative;background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <pre id="cmd-linux" style="padding:14px 42px 14px 14px;font-size:12px;color:var(--text-secondary);white-space:pre-wrap;word-break:break-all;margin:0;line-height:1.6">curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --no-default-keyring \
+  --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import
+chmod 644 /usr/share/keyrings/wazuh.gpg
+echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" \
+  | tee /etc/apt/sources.list.d/wazuh.list
+apt-get update
+WAZUH_MANAGER="{{ wazuh_manager_ip }}" \
+WAZUH_REGISTRATION_SERVER="{{ wazuh_manager_ip }}" \
+WAZUH_AGENT_GROUP="{{ wazuh_group }}" \
+apt-get install -y wazuh-agent
+systemctl enable wazuh-agent && systemctl start wazuh-agent</pre>
+        <button onclick="copyCmd('cmd-linux',this)" style="position:absolute;top:10px;right:10px;background:var(--s3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;cursor:pointer;color:var(--muted2)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    {# Windows #}
+    <div id="os-windows" class="os-pane" style="display:none">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">PowerShell — run as Administrator</p>
+      <div style="position:relative;background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <pre id="cmd-windows" style="padding:14px 42px 14px 14px;font-size:12px;color:var(--text-secondary);white-space:pre-wrap;word-break:break-all;margin:0;line-height:1.6">Invoke-WebRequest -Uri https://packages.wazuh.com/4.x/windows/wazuh-agent-4.9.0-1.msi `
+  -OutFile $env:tmp\wazuh-agent.msi
+msiexec.exe /i $env:tmp\wazuh-agent.msi /q `
+  WAZUH_MANAGER="{{ wazuh_manager_ip }}" `
+  WAZUH_REGISTRATION_SERVER="{{ wazuh_manager_ip }}" `
+  WAZUH_AGENT_GROUP="{{ wazuh_group }}"
+NET START WazuhSvc</pre>
+        <button onclick="copyCmd('cmd-windows',this)" style="position:absolute;top:10px;right:10px;background:var(--s3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;cursor:pointer;color:var(--muted2)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    {# macOS #}
+    <div id="os-macos" class="os-pane" style="display:none">
+      <p style="font-size:12px;color:var(--muted);margin-bottom:10px">Terminal</p>
+      <div style="position:relative;background:var(--s2);border:1px solid var(--border);border-radius:8px;overflow:hidden">
+        <pre id="cmd-macos" style="padding:14px 42px 14px 14px;font-size:12px;color:var(--text-secondary);white-space:pre-wrap;word-break:break-all;margin:0;line-height:1.6">curl -so wazuh-agent.pkg \
+  https://packages.wazuh.com/4.x/macos/wazuh-agent-4.9.0-1.pkg
+echo "WAZUH_MANAGER='{{ wazuh_manager_ip }}' \
+WAZUH_REGISTRATION_SERVER='{{ wazuh_manager_ip }}' \
+WAZUH_AGENT_GROUP='{{ wazuh_group }}'" > /tmp/wazuh_envs
+sudo installer -pkg wazuh-agent.pkg -target /
+sudo /Library/Ossec/bin/wazuh-control start</pre>
+        <button onclick="copyCmd('cmd-macos',this)" style="position:absolute;top:10px;right:10px;background:var(--s3);border:1px solid var(--border2);border-radius:6px;padding:5px 8px;cursor:pointer;color:var(--muted2)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        </button>
+      </div>
+    </div>
+
+    {# Manager IP and group boxes #}
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">
+      <div style="background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:14px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:8px">Manager IP</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span id="mgr-ip" style="font-family:monospace;font-size:13px;color:var(--text-secondary)">{{ wazuh_manager_ip }}</span>
+          <button onclick="copyText('mgr-ip',this)" style="background:none;border:none;cursor:pointer;color:var(--muted2);padding:4px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+      <div style="background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:14px">
+        <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:8px">Your agent group</div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <span id="agent-grp" style="font-family:monospace;font-size:13px;color:var(--accent)">{{ wazuh_group }}</span>
+          <button onclick="copyText('agent-grp',this)" style="background:none;border:none;cursor:pointer;color:var(--muted2);padding:4px">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{# ── All agents list ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+        </svg>
+        Enrolled agents
+      </div>
+      <div class="card-desc">All agents registered under your group <code style="background:var(--s3);padding:1px 5px;border-radius:3px;font-size:11px">{{ wazuh_group }}</code>.</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="refreshAgents()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2-8.83"/></svg>
+      Refresh
+    </button>
+  </div>
+  <div class="card-body" style="padding:0">
+    {% if agents %}
+    <table class="tbl">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>OS</th>
+          <th>IP address</th>
+          <th>Status</th>
+          <th>Last seen</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for agent in agents %}
+        <tr>
+          <td>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="tbl-avatar" style="font-size:10px;background:var(--s3);color:var(--muted2)">{{ agent.id }}</div>
+              <div>
+                <div style="font-size:13px;font-weight:600">{{ agent.name }}</div>
+                <div style="font-size:11px;color:var(--muted)">ID: {{ agent.id }}</div>
+              </div>
+            </div>
+          </td>
+          <td style="font-size:12px;color:var(--muted2)">{{ agent.os.name|default:"Unknown" }} {{ agent.os.version|default:"" }}</td>
+          <td style="font-family:monospace;font-size:12px;color:var(--muted2)">{{ agent.ip|default:"—" }}</td>
+          <td>
+            {% if agent.status == "active" %}
+              <span class="badge green"><span class="badge-dot"></span>Active</span>
+            {% elif agent.status == "disconnected" %}
+              <span class="badge" style="background:rgba(239,68,68,.1);color:var(--red)"><span class="badge-dot" style="background:var(--red)"></span>Disconnected</span>
+            {% elif agent.status == "pending" %}
+              <span class="badge" style="background:rgba(245,158,11,.1);color:var(--amber)"><span class="badge-dot" style="background:var(--amber)"></span>Pending</span>
+            {% else %}
+              <span class="badge"><span class="badge-dot"></span>{{ agent.status|title }}</span>
+            {% endif %}
+          </td>
+          <td style="font-size:12px;color:var(--muted)">{{ agent.lastKeepAlive|default:"Never" }}</td>
+          <td>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="openModal('modal-agent-{{ agent.id }}')">Configure</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmRemoveAgent('{{ agent.id }}','{{ agent.name }}')">Remove</button>
+            </div>
+          </td>
+        </tr>
+
+        {# Per-agent configure modal #}
+        <div class="modal-backdrop" id="modal-agent-{{ agent.id }}">
+          <div class="modal">
+            <div class="modal-title">Configure: {{ agent.name }}</div>
+            <div class="modal-sub">Agent ID {{ agent.id }} · {{ agent.ip|default:"IP unknown" }}</div>
+            <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:20px">
+              <div style="background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:12px 14px">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+                  <div><span style="color:var(--muted)">Status</span><br><strong>{{ agent.status|title }}</strong></div>
+                  <div><span style="color:var(--muted)">OS</span><br><strong>{{ agent.os.name|default:"Unknown" }}</strong></div>
+                  <div><span style="color:var(--muted)">IP</span><br><strong style="font-family:monospace">{{ agent.ip|default:"—" }}</strong></div>
+                  <div><span style="color:var(--muted)">Group</span><br><strong style="font-family:monospace">{{ wazuh_group }}</strong></div>
+                </div>
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Agent name</label>
+                <input type="text" value="{{ agent.name }}">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label>Agent group</label>
+                <input type="text" value="{{ wazuh_group }}" disabled>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0;margin-top:8px">
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <strong>Vulnerability scanning</strong>
+                  <span>Run CVE checks on this agent</span>
+                </div>
+                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+              </div>
+              <div class="toggle-row">
+                <div class="toggle-info">
+                  <strong>File integrity monitoring</strong>
+                  <span>Monitor critical directories for changes</span>
+                </div>
+                <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+              </div>
+              <div class="toggle-row" style="border-bottom:none">
+                <div class="toggle-info">
+                  <strong>Rootkit detection</strong>
+                  <span>Enable rootkit and hidden process scanning</span>
+                </div>
+                <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+              </div>
+            </div>
+            <div class="modal-foot">
+              <button class="btn btn-ghost" onclick="closeModal('modal-agent-{{ agent.id }}')">Cancel</button>
+              <button class="btn btn-primary" onclick="closeModal('modal-agent-{{ agent.id }}');showToast('Agent settings saved','success',2000)">Save changes</button>
+            </div>
+          </div>
+        </div>
+
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:40px 20px;text-align:center;color:var(--muted)">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity:.3;margin-bottom:12px"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <p style="font-size:13px;margin-bottom:6px">No agents enrolled yet.</p>
+      <p style="font-size:12px">Use the install commands above to add your first agent.</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{# ── Agent config defaults ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+        </svg>
+        Default agent settings
+      </div>
+      <div class="card-desc">These settings apply to all newly enrolled agents in your group.</div>
+    </div>
+  </div>
+  <div class="card-body">
+    <div style="display:flex;flex-direction:column;gap:0">
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Vulnerability detection</strong>
+          <span>Enable CVE scanning on all new agents by default</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Security configuration audit (SCA)</strong>
+          <span>Run CIS benchmark checks on all new agents</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>File integrity monitoring</strong>
+          <span>Monitor critical system paths on all new agents</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row">
+        <div class="toggle-info">
+          <strong>Log collection</strong>
+          <span>Collect system, auth, and application logs for analysis</span>
+        </div>
+        <label class="switch"><input type="checkbox" checked><span class="slider"></span></label>
+      </div>
+      <div class="toggle-row" style="border-bottom:none">
+        <div class="toggle-info">
+          <strong>Rootkit detection</strong>
+          <span>Scan for hidden processes and rootkits on new agents</span>
+        </div>
+        <label class="switch"><input type="checkbox"><span class="slider"></span></label>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:flex-end;margin-top:16px">
+      <button class="btn btn-primary btn-sm" onclick="showToast('Default agent settings saved','success',2000)">Save defaults</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+function switchOS(btn, os) {
+  document.querySelectorAll('.os-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.os-block').forEach(b => b.style.display = 'none');
+  btn.classList.add('active');
+  document.getElementById('os-' + os).style.display = 'block';
+}
+
+function copyBlock(id, btn) {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    }, 2000);
+  });
+}
+
+function copyText(id, btn) {
+  const text = document.getElementById(id).innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>`;
+    setTimeout(() => {
+      btn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`;
+    }, 2000);
+  });
+}
+
+function agentTab(el, pane) {
+  document.querySelectorAll('.os-pane').forEach(p => p.style.display = 'none');
+  el.parentElement.querySelectorAll('div').forEach(t => {
+    t.style.color = 'var(--muted2)';
+    t.style.borderBottomColor = 'transparent';
+  });
+  document.getElementById(pane).style.display = 'block';
+  el.style.color = 'var(--accent)';
+  el.style.borderBottomColor = 'var(--accent)';
+}
+
+function copyCmd(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    }, 2000);
+  });
+}
+
+function copyText(id, btn) {
+  navigator.clipboard.writeText(document.getElementById(id).innerText).then(() => {
+    btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    }, 2000);
+  });
+}
+
+function refreshAgents() {
+  showToast('Refreshing agents…', 'info', 1500);
+  setTimeout(() => location.reload(), 1500);
+}
+
+function confirmRemoveAgent(id, name) {
+  if (confirm('Remove agent ' + name + ' (ID: ' + id + ')? This cannot be undone.')) {
+    showToast('Agent ' + name + ' removed', 'success', 2000);
+  }
+}
+</script>

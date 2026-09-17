@@ -1,0 +1,408 @@
+/* ════════════════════════════════════════════════════════
+   BILLING & SUBSCRIPTION STYLES
+   ════════════════════════════════════════════════════════ */
+
+/* Plan cards */
+.plan-card {
+  border: 2px solid var(--border2);
+  border-radius: 12px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  position: relative;
+  background: var(--s2);
+}
+
+.plan-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.15);
+}
+
+.plan-card.current {
+  border-color: var(--primary);
+  background: rgba(220, 38, 38, 0.05);
+}
+
+.plan-card.current:hover {
+  border-color: var(--primary);
+  box-shadow: 0 8px 24px rgba(220, 38, 38, 0.2);
+}
+
+.plan-current-tag {
+  position: absolute;
+  top: -1px;
+  right: 16px;
+  background: var(--primary);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 10px;
+  border-radius: 0 0 6px 6px;
+  letter-spacing: 0.5px;
+}
+
+.plan-name {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.plan-price {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  color: var(--primary);
+}
+
+.plan-price span {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.plan-features {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.plan-feat {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+.plan-feat svg {
+  flex-shrink: 0;
+  color: var(--success);
+  width: 13px;
+  height: 13px;
+}
+
+/* Invoice rows */
+.invoice-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  background: var(--s2);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  margin-bottom: 6px;
+  transition: border-color var(--transition-fast);
+}
+
+.invoice-row:hover {
+  border-color: var(--primary);
+}
+
+.invoice-date {
+  font-size: 12px;
+  color: var(--muted);
+  width: 100px;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+
+.invoice-desc {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.invoice-amount {
+  font-size: 13px;
+  font-weight: 700;
+  font-family: 'Fira Code', monospace;
+  color: var(--accent);
+}
+
+.invoice-status {
+  margin-left: 8px;
+}
+
+/* Integration cards */
+.int-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px;
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  transition: all var(--transition-fast);
+}
+
+.int-card:hover {
+  border-color: var(--primary);
+  background: var(--s3);
+}
+
+.int-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.int-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.int-desc {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+
+.int-right {
+  margin-left: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+/* Usage bars */
+.usage-bar {
+  background: var(--border2);
+  border-radius: 4px;
+  height: 6px;
+  overflow: hidden;
+  margin-top: 6px;
+}
+
+.usage-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--primary);
+  transition: width var(--transition-normal);
+}
+
+.usage-fill.warn {
+  background: var(--warning);
+}
+
+.usage-fill.over {
+  background: var(--danger);
+}
+
+/* Key box (API keys, commands) */
+.key-box {
+  background: var(--s3);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  font-size: 12px;
+  color: var(--cyan);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  word-break: break-all;
+}
+
+.key-box span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.key-copy {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 0;
+  line-height: 0;
+  transition: color var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.key-copy:hover {
+  color: var(--text);
+}
+
+.key-copy svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Channel rows */
+.channel-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.channel-row:last-child {
+  border-bottom: none;
+}
+
+.channel-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 16px;
+  background: rgba(220, 38, 38, 0.1);
+}
+
+.channel-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.channel-value {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.channel-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Rule rows (alert rules) */
+.rule-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.rule-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.rule-sev {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.rule-name {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.rule-channel {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Audit log rows */
+.audit-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.audit-row:last-child {
+  border-bottom: none;
+}
+
+.audit-time {
+  font-size: 11px;
+  color: var(--muted);
+  width: 90px;
+  flex-shrink: 0;
+  font-family: 'Fira Code', monospace;
+}
+
+.audit-user {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.audit-action {
+  font-size: 12px;
+  color: var(--muted2);
+}
+
+/* Agent cards */
+.agent-card {
+  background: var(--s2);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: all var(--transition-fast);
+}
+
+.agent-card:hover {
+  border-color: var(--primary);
+  background: var(--s3);
+}
+
+.agent-status {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.agent-status.online {
+  background: var(--success);
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.5);
+}
+
+.agent-status.offline {
+  background: var(--muted);
+}
+
+.agent-status.warning {
+  background: var(--warning);
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.5);
+}
+
+.agent-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.agent-meta {
+  font-size: 11px;
+  color: var(--muted);
+  font-family: monospace;
+}
+
+.agent-actions {
+  margin-left: auto;
+  display: flex;
+  gap: 6px;
+}

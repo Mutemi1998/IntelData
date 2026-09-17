@@ -1,0 +1,476 @@
+{% comment %}
+
+   ════════════════════════════════════════════════════════
+   BILLING & SUBSCRIPTION SECTION
+   ════════════════════════════════════════════════════════
+
+{% endcomment %}
+
+
+{# ── Status + quick stats ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2">
+          <rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>
+        </svg>
+        Current subscription
+      </div>
+      <div class="card-desc">Your active plan and usage this billing cycle.</div>
+    </div>
+    {% if subscription %}
+      <span class="badge {% if subscription.status == 'active' %}green{% elif subscription.status == 'trial' %}blue{% elif subscription.status == 'suspended' %}red{% else %}amber{% endif %}">
+        <span class="badge-dot"></span>
+        {{ subscription.get_status_display }}
+      </span>
+    {% endif %}
+  </div>
+
+  <div class="card-body">
+    {% if subscription %}
+
+      {# ── Key metrics ── #}
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px">
+        <div style="background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:16px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Plan</div>
+          <div style="font-size:17px;font-weight:800;color:var(--primary)">{{ subscription.plan.name }}</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:16px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Monthly cost</div>
+          <div style="font-size:17px;font-weight:800;color:var(--success)">KES {{ subscription.plan.monthly_price|floatformat:0 }}</div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:16px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">
+            {% if subscription.status == 'trial' %}Trial ends{% else %}Renews{% endif %}
+          </div>
+          <div style="font-size:17px;font-weight:800;{% if subscription.status == 'trial' %}color:var(--warning){% endif %}">
+            {{ subscription.end_date|date:"d M Y" }}
+          </div>
+        </div>
+        <div style="background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:16px">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px">Auto-renew</div>
+          <div style="font-size:17px;font-weight:800;color:{% if subscription.auto_renew %}var(--success){% else %}var(--muted){% endif %}">
+            {% if subscription.auto_renew %}On{% else %}Off{% endif %}
+          </div>
+        </div>
+      </div>
+
+      {# ── Trial banner ── #}
+      {% if subscription.status == 'trial' %}
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:20px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--warning)">You are on a free trial</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Your trial expires on {{ subscription.end_date|date:"d M Y" }}. Select a plan below to continue without interruption.</div>
+        </div>
+        <a href="#" class="btn btn-primary btn-sm" onclick="scrollToPlan(); return false;">Choose a plan</a>
+      </div>
+      {% endif %}
+
+      {# ── Suspended banner ── #}
+      {% if subscription.status == 'suspended' %}
+      <div style="background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);border-radius:10px;padding:14px 18px;display:flex;align-items:center;gap:14px;margin-bottom:20px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--danger)">Subscription suspended</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:2px">Access to features is restricted. Contact IntelData to reinstate your subscription.</div>
+        </div>
+        <a href="mailto:billing@inteldata.co.ke" class="btn btn-danger btn-sm">Contact billing</a>
+      </div>
+      {% endif %}
+
+      {# ── Usage bars ── #}
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px">
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:12px;color:var(--muted)">Users</span>
+            <span style="font-size:12px;font-weight:600">{{ user_count }} / {{ subscription.plan.max_users }}</span>
+          </div>
+          <div class="usage-bar">
+            {% with pct=user_count|default:0 %}
+            <div class="usage-fill {% if user_count >= subscription.plan.max_users %}over{% elif user_count >= subscription.plan.max_users|add:'-2' %}warn{% endif %}"
+                 style="width:{% widthratio user_count|default:0 subscription.plan.max_users 100 %}%"></div>
+            {% endwith %}
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">{{ subscription.plan.max_users|add:user_count|default:0 }} seats available</div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:12px;color:var(--muted)">Monitored assets</span>
+            <span style="font-size:12px;font-weight:600">{{ asset_count }} / {{ subscription.plan.max_assets }}</span>
+          </div>
+          <div class="usage-bar">
+            <div class="usage-fill {% if asset_count >= subscription.plan.max_assets %}over{% elif asset_count >= subscription.plan.max_assets|add:'-10' %}warn{% endif %}"
+                 style="width:{% widthratio asset_count|default:0 subscription.plan.max_assets 100 %}%"></div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">Max {{ subscription.plan.max_assets }} assets on this plan</div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+            <span style="font-size:12px;color:var(--muted)">Incidents / mo</span>
+            <span style="font-size:12px;font-weight:600">{{ incident_count|default:0 }} / {{ subscription.plan.max_incidents }}</span>
+          </div>
+          <div class="usage-bar">
+            <div class="usage-fill"
+                 style="width:{% widthratio incident_count|default:0 subscription.plan.max_incidents 100 %}%"></div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px">Max {{ subscription.plan.max_incidents }} incidents/month</div>
+        </div>
+      </div>
+
+      {# ── Included services ── #}
+      {% if subscription.plan.services.all %}
+      <div style="margin-top:20px;padding-top:18px;border-top:1px solid var(--border)">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin-bottom:12px">Services included in {{ subscription.plan.name }}</div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          {% for svc in subscription.plan.services.all %}
+          <span style="display:inline-flex;align-items:center;gap:6px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--success)">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            {{ svc.name }}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+    {% else %}
+      <div class="empty">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.5"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+        <p>No active subscription. Choose a plan below to get started.</p>
+        <a href="#" class="btn btn-primary" style="margin-top:14px;display:inline-flex" onclick="scrollToPlan(); return false;">View plans</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+{# ── Active add-ons ── #}
+{% if addons %}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/></svg>
+        Active add-ons
+      </div>
+      <div class="card-desc">Extra services enabled for your organisation on top of your base plan.</div>
+    </div>
+    <span class="badge blue"><span class="badge-dot"></span>{{ addons.count }} active</span>
+  </div>
+  <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+    {% for addon in addons %}
+    <div class="int-card">
+      <div class="int-icon" style="background:rgba(139,92,246,.1);font-size:16px">⚡</div>
+      <div>
+        <div class="int-name">{{ addon.service.name }}</div>
+        <div class="int-desc">{{ addon.service.description|truncatewords:15 }}</div>
+        {% if addon.end_date %}
+        <div style="font-size:10px;color:var(--warning);margin-top:3px">Expires {{ addon.end_date|date:"d M Y" }}</div>
+        {% endif %}
+      </div>
+      <div class="int-right">
+        <span class="badge green"><span class="badge-dot"></span>Enabled</span>
+        {% if is_admin %}
+        <form method="post" action="{% url 'remove_service' addon.service.pk %}" style="margin:0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger btn-sm"
+                  onclick="return confirm('Remove {{ addon.service.name }}?')">Remove</button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── Plan selector ── #}
+<div id="plans-section" class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--warning)" stroke-width="2">
+          <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+        </svg>
+        Available plans
+      </div>
+      <div class="card-desc">
+        {% if subscription %}
+          You are on <strong>{{ subscription.plan.name }}</strong>. Select any plan to upgrade or downgrade.
+        {% else %}
+          Choose a plan to activate your organisation's subscription.
+        {% endif %}
+      </div>
+    </div>
+    {# billing toggle #}
+    <div style="display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border2);border-radius:8px;padding:5px 10px">
+      <span style="font-size:12px;color:var(--muted)" id="lbl-monthly">Monthly</span>
+      <label class="switch" style="margin:0">
+        <input type="checkbox" id="billing-toggle" onchange="toggleBilling(this.checked)">
+        <span class="slider"></span>
+      </label>
+      <span style="font-size:12px;color:var(--muted)" id="lbl-yearly">Yearly <span style="color:var(--success);font-weight:700">−15%</span></span>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px">
+      {% for plan in plans %}
+      <div class="plan-card {% if subscription.plan.pk == plan.pk %}current{% endif %}" id="plan-card-{{ plan.pk }}">
+        {% if subscription.plan.pk == plan.pk %}<div class="plan-current-tag">Current plan</div>{% endif %}
+
+        <div class="plan-name">{{ plan.name }}</div>
+
+        {# price display – monthly default, yearly swapped via JS #}
+        <div class="plan-price" id="price-{{ plan.pk }}">
+          KES {{ plan.monthly_price|floatformat:0 }}<span>/mo</span>
+        </div>
+        {% if plan.yearly_price %}
+        <div style="display:none;font-size:11px;color:var(--muted);margin-top:2px" id="ysavings-{{ plan.pk }}">
+          KES {{ plan.yearly_price|floatformat:0 }}/yr · save KES {% widthratio plan.monthly_price 12 1 %}k
+        </div>
+        {% endif %}
+
+        {# limits #}
+        <div style="margin:14px 0 10px;display:flex;flex-direction:column;gap:7px">
+          <div class="plan-feat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            {{ plan.max_users }} users
+          </div>
+          <div class="plan-feat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            {{ plan.max_assets }} monitored assets
+          </div>
+          <div class="plan-feat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            {{ plan.max_incidents|floatformat:0 }} incidents/mo
+          </div>
+          {% for svc in plan.services.all %}
+          <div class="plan-feat">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            {{ svc.name }}
+          </div>
+          {% endfor %}
+        </div>
+
+        {# CTA #}
+        {% if is_admin %}
+          {% if subscription.plan.pk == plan.pk %}
+            <button class="btn btn-ghost" style="width:100%;justify-content:center;cursor:default;opacity:.5" disabled>Current plan</button>
+          {% elif subscription.plan.monthly_price > plan.monthly_price %}
+            {# downgrade #}
+            <button class="btn btn-ghost" style="width:100%;justify-content:center"
+                    onclick="confirmPlanChange('{{ plan.name }}', {{ plan.pk }}, 'downgrade')">
+              Downgrade to {{ plan.name }}
+            </button>
+          {% else %}
+            {# upgrade #}
+            <button class="btn btn-primary" style="width:100%;justify-content:center"
+                    onclick="confirmPlanChange('{{ plan.name }}', {{ plan.pk }}, 'upgrade')">
+              Upgrade to {{ plan.name }}
+            </button>
+          {% endif %}
+        {% else %}
+          <div style="font-size:11px;color:var(--muted);text-align:center;padding:8px 0">
+            Contact your tenant admin to change plan
+          </div>
+        {% endif %}
+      </div>
+      {% empty %}
+      <div class="empty" style="grid-column:1/-1">
+        <p>No plans configured. Contact IntelData support.</p>
+      </div>
+      {% endfor %}
+    </div>
+
+    {# Enterprise CTA #}
+    <div style="margin-top:16px;background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(59,130,246,.08));border:1px solid rgba(139,92,246,.2);border-radius:10px;padding:16px 20px;display:flex;align-items:center;gap:16px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="1.8"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <div style="flex:1">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Need a custom Enterprise plan?</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Unlimited users and assets, dedicated infrastructure, SLA guarantee, and all available services. Priced to your requirements.</div>
+      </div>
+      <a href="mailto:sales@inteldata.co.ke" class="btn btn-ghost" style="flex-shrink:0;color:var(--purple);border-color:rgba(139,92,246,.3)">Contact sales</a>
+    </div>
+  </div>
+</div>
+
+{# ── Service catalogue (add-ons) ── #}
+{% if available_services and is_admin %}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><circle cx="18" cy="18" r="3"/><circle cx="6" cy="6" r="3"/><path d="M13 6h3a2 2 0 0 1 2 2v7"/><line x1="6" y1="9" x2="6" y2="21"/></svg>
+        Add-on services
+      </div>
+      <div class="card-desc">Extend your plan with individual services billed separately.</div>
+    </div>
+  </div>
+  <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+    {% for svc in available_services %}
+    <div class="int-card">
+      <div class="int-icon" style="background:rgba(6,182,212,.1);font-size:16px">🔌</div>
+      <div style="flex:1">
+        <div class="int-name">{{ svc.name }}</div>
+        <div class="int-desc">{{ svc.description }}</div>
+      </div>
+      <div class="int-right">
+        {% if svc.pk in active_addon_ids %}
+          <span class="badge green"><span class="badge-dot"></span>Enabled</span>
+          <form method="post" action="{% url 'remove_service' svc.pk %}" style="margin:0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger btn-sm"
+                    onclick="return confirm('Remove {{ svc.name }}?')">Remove</button>
+          </form>
+        {% else %}
+          <span class="badge" style="background:var(--s3);color:var(--muted2);border:1px solid var(--border2)">Not added</span>
+          <form method="post" action="{% url 'add_service' svc.pk %}" style="margin:0">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-success btn-sm">Add</button>
+          </form>
+        {% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{# ── Invoices ── #}
+<div class="card">
+  <div class="card-head">
+    <div>
+      <div class="card-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--muted2)" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Billing history
+      </div>
+      <div class="card-desc">Invoices for this organisation.</div>
+    </div>
+    <button class="btn btn-ghost btn-sm" onclick="showToast('Downloaded invoices', 'success', 2000)">Download all</button>
+  </div>
+  <div class="card-body">
+    {% if invoices %}
+      {% for inv in invoices %}
+      <div class="invoice-row">
+        <span class="invoice-date">{{ inv.date|date:"M Y" }}</span>
+        <span class="invoice-desc">{{ inv.description }}</span>
+        <span class="invoice-amount">KES {{ inv.amount|floatformat:0 }}</span>
+        <span class="invoice-status">
+          <span class="badge {% if inv.paid %}green{% else %}amber{% endif %}">{{ inv.status }}</span>
+        </span>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Downloading PDF...', 'success', 2000)">PDF</button>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="invoice-row">
+        <span class="invoice-date">{{ subscription.start_date|date:"M Y"|default:"—" }}</span>
+        <span class="invoice-desc">{{ subscription.plan.name }} — activation</span>
+        <span class="invoice-amount">KES {{ subscription.plan.monthly_price|floatformat:0|default:"—" }}</span>
+        <span class="invoice-status"><span class="badge green">Paid</span></span>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Downloading PDF...', 'success', 2000)">PDF</button>
+      </div>
+      <div style="font-size:12px;color:var(--muted);padding:10px 0 2px">Full invoice history will appear here once billing cycles complete.</div>
+    {% endif %}
+  </div>
+</div>
+
+{% comment %}
+{# ════════════════════════════════════════════════════════
+   PLAN CHANGE CONFIRMATION MODAL
+   ════════════════════════════════════════════════════════ #}
+{% endcomment %}
+<div class="modal-backdrop" id="modal-plan-change">
+  <div class="modal">
+    <div class="modal-title" id="modal-plan-title">Change plan</div>
+    <div class="modal-sub" id="modal-plan-sub">Review the change below before confirming.</div>
+
+    <div style="background:var(--s2);border:1px solid var(--border2);border-radius:10px;padding:16px;margin-bottom:4px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:12px;color:var(--muted)">Current plan</span>
+        <span style="font-size:13px;font-weight:700;color:var(--muted2)">{{ subscription.plan.name|default:"—" }}</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;color:var(--muted)">New plan</span>
+        <span style="font-size:13px;font-weight:700;color:var(--primary)" id="modal-plan-new">—</span>
+      </div>
+    </div>
+
+    <div style="background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px 14px;margin-top:12px;font-size:12px;color:var(--muted2)">
+      <strong style="color:var(--warning)">Note:</strong> Plan changes take effect immediately. Features not included in the new plan will be disabled. Contact billing if you need pro-rated credits.
+    </div>
+
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('modal-plan-change')">Cancel</button>
+      <form method="post" id="plan-change-form" style="margin:0">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-primary" id="modal-plan-btn">Confirm change</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+{# Hidden URL map for plan changes (JS uses this to avoid hardcoded URLs) #}
+<div id="plan-urls" style="display:none">
+  {% for plan in plans %}
+  <span data-plan-id="{{ plan.pk }}" data-url="{% url 'upgrade_subscription' plan.pk %}"></span>
+  {% endfor %}
+</div>
+
+<script>
+/* ── Plan change modal ── */
+function confirmPlanChange(planName, planId, direction) {
+  const isUpgrade = direction === 'upgrade';
+  document.getElementById('modal-plan-title').textContent = isUpgrade ? 'Upgrade plan' : 'Downgrade plan';
+  document.getElementById('modal-plan-sub').textContent = isUpgrade
+    ? 'You are about to upgrade your subscription. Additional features will be unlocked immediately.'
+    : 'You are about to downgrade. Some features may become unavailable.';
+  document.getElementById('modal-plan-new').textContent = planName;
+  document.getElementById('modal-plan-btn').textContent = isUpgrade ? 'Confirm upgrade' : 'Confirm downgrade';
+  document.getElementById('modal-plan-btn').className = isUpgrade ? 'btn btn-primary' : 'btn btn-danger';
+
+  // Point form at the upgrade URL
+  const urlMap = document.getElementById('plan-urls');
+  if (urlMap) {
+    const urlSpan = urlMap.querySelector(`[data-plan-id="${planId}"]`);
+    if (urlSpan) {
+      document.getElementById('plan-change-form').action = urlSpan.dataset.url;
+    }
+  }
+
+  openModal('modal-plan-change');
+}
+
+/* ── Monthly / yearly price toggle ── */
+const planPrices = {
+  {% for plan in plans %}
+  {{ plan.pk }}: {
+    monthly: 'KES {{ plan.monthly_price|floatformat:0 }}<span>/mo</span>',
+    yearly:  '{% if plan.yearly_price %}KES {{ plan.yearly_price|floatformat:0 }}<span>/yr</span>{% else %}KES {{ plan.monthly_price|floatformat:0 }}<span>/mo</span>{% endif %}'
+  },
+  {% endfor %}
+};
+
+function toggleBilling(yearly) {
+  document.getElementById('lbl-monthly').style.color = yearly ? 'var(--muted)' : 'var(--text)';
+  document.getElementById('lbl-yearly').style.color  = yearly ? 'var(--text)'  : 'var(--muted)';
+
+  {% for plan in plans %}
+  document.getElementById('price-{{ plan.pk }}').innerHTML = yearly
+    ? planPrices[{{ plan.pk }}].yearly
+    : planPrices[{{ plan.pk }}].monthly;
+  {% if plan.yearly_price %}
+  document.getElementById('ysavings-{{ plan.pk }}').style.display = yearly ? 'block' : 'none';
+  {% endif %}
+  {% endfor %}
+}
+
+function scrollToPlan() {
+  setTimeout(() => {
+    document.getElementById('plans-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 50);
+}
+</script>

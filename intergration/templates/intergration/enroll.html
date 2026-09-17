@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="panel">
+  <div class="panel-head">
+    <div class="panel-title">Add a Wazuh Agent</div>
+  </div>
+  <div class="panel-body">
+
+    <p style="color:var(--muted);margin-bottom:20px">
+      Install the Wazuh agent on your endpoint using the commands below.
+      It will automatically register to your tenant group.
+    </p>
+
+    <div style="margin-bottom:16px">
+      <div class="stat-label">Your Group</div>
+      <code style="color:var(--accent)">{{ enroll.group }}</code>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div class="stat-label">Linux / Ubuntu / Debian</div>
+      <pre style="background:var(--s2);padding:14px;border-radius:8px;border:1px solid var(--border);color:var(--text);overflow-x:auto">curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH | gpg --no-default-keyring \
+  --keyring gnupg-ring:/usr/share/keyrings/wazuh.gpg --import && \
+  chmod 644 /usr/share/keyrings/wazuh.gpg
+echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" | \
+  tee /etc/apt/sources.list.d/wazuh.list
+apt-get update
+WAZUH_MANAGER="{{ enroll.wazuh_host }}" \
+WAZUH_REGISTRATION_SERVER="{{ enroll.wazuh_host }}" \
+WAZUH_AGENT_GROUP="{{ enroll.group }}" \
+apt-get install -y wazuh-agent
+systemctl enable wazuh-agent && systemctl start wazuh-agent</pre>
+    </div>
+
+    <div style="margin-bottom:16px">
+      <div class="stat-label">Windows (PowerShell — run as Administrator)</div>
+      <pre style="background:var(--s2);padding:14px;border-radius:8px;border:1px solid var(--border);color:var(--text);overflow-x:auto">Invoke-WebRequest -Uri https://packages.wazuh.com/4.x/windows/wazuh-agent-4.x.x-1.msi `
+  -OutFile wazuh-agent.msi
+msiexec /i wazuh-agent.msi /q `
+  WAZUH_MANAGER="{{ enroll.wazuh_host }}" `
+  WAZUH_REGISTRATION_SERVER="{{ enroll.wazuh_host }}" `
+  WAZUH_AGENT_GROUP="{{ enroll.group }}"
+NET START WazuhSvc</pre>
+    </div>
+
+    <div>
+      <div class="stat-label">macOS</div>
+      <pre style="background:var(--s2);padding:14px;border-radius:8px;border:1px solid var(--border);color:var(--text);overflow-x:auto">curl -so wazuh-agent.pkg https://packages.wazuh.com/4.x/macos/wazuh-agent-4.x.x-1.pkg
+echo "WAZUH_MANAGER='{{ enroll.wazuh_host }}' \
+WAZUH_REGISTRATION_SERVER='{{ enroll.wazuh_host }}' \
+WAZUH_AGENT_GROUP='{{ enroll.group }}'" > /tmp/wazuh_envs
+sudo installer -pkg wazuh-agent.pkg -target /
+sudo /Library/Ossec/bin/wazuh-control start</pre>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

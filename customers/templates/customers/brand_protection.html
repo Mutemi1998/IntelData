@@ -1,0 +1,464 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Brand Protection — IntelData{% endblock %}
+
+{% block extra_head %}
+<link rel="stylesheet" href="{% static 'css/settings/settings.css' %}">
+<style>
+  body { display: flex; background: var(--bg); }
+  main { flex: 1; }
+
+  .bp-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+  .bp-stat {
+    background: var(--s1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bp-stat::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+  }
+  .bp-stat.red::after    { background: var(--red); }
+  .bp-stat.amber::after  { background: var(--amber); }
+  .bp-stat.blue::after   { background: var(--accent); }
+  .bp-stat.purple::after { background: var(--purple); }
+  .bp-stat-val { font-size: 28px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+  .bp-stat-lbl { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); margin-bottom: 8px; }
+  .bp-stat-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .threat-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 14px 16px;
+    background: var(--s2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    margin-bottom: 8px;
+    transition: border-color 0.15s;
+  }
+  .threat-row:hover { border-color: var(--border2); }
+  .threat-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .threat-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 3px; }
+  .threat-desc  { font-size: 12px; color: var(--muted2); }
+  .threat-meta  { font-size: 11px; color: var(--muted); display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+
+  .risk-badge {
+    font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 4px;
+    letter-spacing: 0.5px; flex-shrink: 0;
+  }
+  .risk-badge.critical { background: rgba(239,68,68,.15); color: var(--red);    border: 1px solid rgba(239,68,68,.3); }
+  .risk-badge.high     { background: rgba(245,158,11,.15); color: var(--amber);  border: 1px solid rgba(245,158,11,.3); }
+  .risk-badge.medium   { background: rgba(59,130,246,.15); color: var(--accent); border: 1px solid rgba(59,130,246,.3); }
+  .risk-badge.low      { background: rgba(16,185,129,.15); color: var(--green);  border: 1px solid rgba(16,185,129,.3); }
+
+  .tab-bar  { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .tab-item {
+    padding: 9px 16px;
+    font-size: 13px; font-weight: 500;
+    color: var(--muted2);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab-item:hover  { color: var(--text); }
+  .tab-item.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .domain-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--s2);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    font-size: 12px;
+    margin-bottom: 6px;
+  }
+  .domain-row:hover { border-color: var(--border2); }
+  .ssl-yes { color: var(--red);   font-weight: 600; font-size: 11px; }
+  .ssl-no  { color: var(--muted); font-size: 11px; }
+
+  .takedown-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+  }
+  .takedown-row:last-child { border-bottom: none; }
+</style>
+{% endblock %}
+
+{% block content %}
+
+{% include 'customers/sidebar.html' %}
+
+<main>
+
+  {# ── Topbar ── #}
+  <header class="topbar">
+    <div class="topbar-left">
+      <h1 class="topbar-title">Brand Protection</h1>
+      <p class="topbar-breadcrumb">{{ membership.tenant.name }} &middot; Last scan 14 minutes ago</p>
+    </div>
+    <div style="display:flex;gap:10px">
+      <a href="{% url 'settings' %}#sec-brand" class="btn btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14M4.93 4.93a10 10 0 0 0 0 14.14"/>
+        </svg>
+        Settings
+      </a>
+      <button class="btn btn-primary" onclick="showToast('Scan triggered','success',2000)">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="5 3 19 12 5 21 5 3"/>
+        </svg>
+        Run scan
+      </button>
+    </div>
+  </header>
+
+  <div class="content">
+
+    {# ── Stat cards ── #}
+    <div class="bp-stat-grid">
+      <div class="bp-stat red">
+        <div class="bp-stat-lbl">Active threats</div>
+        <div class="bp-stat-val" style="color:var(--red)">7</div>
+        <div class="bp-stat-sub"><span style="color:var(--red)">3 new</span> since last week</div>
+      </div>
+      <div class="bp-stat amber">
+        <div class="bp-stat-lbl">Spoofed domains</div>
+        <div class="bp-stat-val" style="color:var(--amber)">12</div>
+        <div class="bp-stat-sub">4 with active SSL</div>
+      </div>
+      <div class="bp-stat blue">
+        <div class="bp-stat-lbl">Dark web mentions</div>
+        <div class="bp-stat-val" style="color:var(--accent)">3</div>
+        <div class="bp-stat-sub">2 credential leaks</div>
+      </div>
+      <div class="bp-stat purple">
+        <div class="bp-stat-lbl">Social impersonations</div>
+        <div class="bp-stat-val" style="color:var(--purple)">5</div>
+        <div class="bp-stat-sub">2 takedowns pending</div>
+      </div>
+    </div>
+
+    {# ── Two-column layout ── #}
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:16px">
+
+      {# Recent threats #}
+      <div class="card">
+        <div class="card-head">
+          <div>
+            <div class="card-title">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              </svg>
+              Recent threats
+            </div>
+            <div class="card-desc">Highest priority findings across all monitoring categories.</div>
+          </div>
+          <a href="#" style="font-size:11px;color:var(--accent)">View all</a>
+        </div>
+        <div class="card-body">
+
+          <div class="threat-row">
+            <div class="threat-icon" style="background:rgba(239,68,68,.1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+                <span class="threat-title">inteldata-support.com</span>
+                <span class="risk-badge critical">Critical</span>
+              </div>
+              <div class="threat-desc">Phishing page detected — cloning your login portal</div>
+              <div class="threat-meta"><span>Domain spoofing</span><span>Registered 2 days ago</span><span>SSL active</span></div>
+            </div>
+            <button class="btn btn-ghost btn-sm">Takedown</button>
+          </div>
+
+          <div class="threat-row">
+            <div class="threat-icon" style="background:rgba(239,68,68,.1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15 15 0 0 1 0 20M12 2a15 15 0 0 0 0 20"/></svg>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+                <span class="threat-title">ínteldata.com</span>
+                <span class="risk-badge critical">Critical</span>
+              </div>
+              <div class="threat-desc">Homoglyph attack — uses accented i (U+00ED)</div>
+              <div class="threat-meta"><span>Homoglyph</span><span>Registered 5 days ago</span><span>MX records active</span></div>
+            </div>
+            <button class="btn btn-ghost btn-sm">Takedown</button>
+          </div>
+
+          <div class="threat-row">
+            <div class="threat-icon" style="background:rgba(245,158,11,.1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M21 2H3v16h5v4l4-4h5l4-4V2z"/></svg>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+                <span class="threat-title">Telegram: @IntelData_Official</span>
+                <span class="risk-badge high">High</span>
+              </div>
+              <div class="threat-desc">Impersonation account running crypto giveaway scam</div>
+              <div class="threat-meta"><span>Social media</span><span>Telegram</span><span>2,400 followers</span></div>
+            </div>
+            <button class="btn btn-ghost btn-sm">Report</button>
+          </div>
+
+          <div class="threat-row">
+            <div class="threat-icon" style="background:rgba(139,92,246,.1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+                <span class="threat-title">Credential leak — 847 accounts</span>
+                <span class="risk-badge high">High</span>
+              </div>
+              <div class="threat-desc">Employee emails and hashed passwords found on BreachForums</div>
+              <div class="threat-meta"><span>Dark web</span><span>BreachForums</span><span>Found 6h ago</span></div>
+            </div>
+            <button class="btn btn-ghost btn-sm">Details</button>
+          </div>
+
+          <div class="threat-row">
+            <div class="threat-icon" style="background:rgba(59,130,246,.1)">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+            </div>
+            <div style="flex:1">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+                <span class="threat-title">Fake app: IntelData Security</span>
+                <span class="risk-badge medium">Medium</span>
+              </div>
+              <div class="threat-desc">Rogue Android app on APKPure — 500+ downloads</div>
+              <div class="threat-meta"><span>App store</span><span>APKPure</span><span>500+ downloads</span></div>
+            </div>
+            <button class="btn btn-ghost btn-sm">Takedown</button>
+          </div>
+
+        </div>
+      </div>
+
+      {# Right column #}
+      <div style="display:flex;flex-direction:column;gap:14px">
+
+        <div class="card">
+          <div class="card-head">
+            <div><div class="card-title">Threat breakdown</div></div>
+          </div>
+          <div class="card-body">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-size:12px;color:var(--muted2);width:130px;flex-shrink:0">Domain spoofing</div>
+                <div style="flex:1;background:var(--s3);border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:58%;background:var(--red);border-radius:4px"></div></div>
+                <div style="font-size:12px;font-weight:700;color:var(--text);width:18px;text-align:right">7</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-size:12px;color:var(--muted2);width:130px;flex-shrink:0">Social media</div>
+                <div style="flex:1;background:var(--s3);border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:42%;background:var(--purple);border-radius:4px"></div></div>
+                <div style="font-size:12px;font-weight:700;color:var(--text);width:18px;text-align:right">5</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-size:12px;color:var(--muted2);width:130px;flex-shrink:0">Dark web</div>
+                <div style="flex:1;background:var(--s3);border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:25%;background:var(--amber);border-radius:4px"></div></div>
+                <div style="font-size:12px;font-weight:700;color:var(--text);width:18px;text-align:right">3</div>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="font-size:12px;color:var(--muted2);width:130px;flex-shrink:0">App stores</div>
+                <div style="flex:1;background:var(--s3);border-radius:4px;height:6px;overflow:hidden"><div style="height:100%;width:17%;background:var(--accent);border-radius:4px"></div></div>
+                <div style="font-size:12px;font-weight:700;color:var(--text);width:18px;text-align:right">2</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div><div class="card-title">Takedown tracker</div></div>
+            <a href="#" style="font-size:11px;color:var(--accent)">All</a>
+          </div>
+          <div class="card-body">
+            <div class="takedown-row">
+              <span style="color:var(--muted2)">inteldata-login.com</span>
+              <span style="color:var(--green);font-weight:600">Removed</span>
+            </div>
+            <div class="takedown-row">
+              <span style="color:var(--muted2)">@IntelData_KE (Twitter)</span>
+              <span style="color:var(--amber);font-weight:600">In review</span>
+            </div>
+            <div class="takedown-row">
+              <span style="color:var(--muted2)">inteldata-support.com</span>
+              <span style="color:var(--red);font-weight:600">Submitted</span>
+            </div>
+            <div class="takedown-row">
+              <span style="color:var(--muted2)">Fake APK on APKPure</span>
+              <span style="color:var(--muted);font-weight:600">Pending</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    {# ── Detailed findings ── #}
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/>
+              <line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/>
+              <line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+            </svg>
+            Detailed findings
+          </div>
+          <div class="card-desc">Full breakdown by category.</div>
+        </div>
+        <a href="{% url 'settings' %}#sec-brand" style="font-size:11px;color:var(--accent)">Configure</a>
+      </div>
+      <div class="card-body">
+
+        <div class="tab-bar">
+          <div class="tab-item active" onclick="switchTab(this,'tab-domains')">Domains (12)</div>
+          <div class="tab-item" onclick="switchTab(this,'tab-dark')">Dark web (3)</div>
+          <div class="tab-item" onclick="switchTab(this,'tab-social')">Social (5)</div>
+          <div class="tab-item" onclick="switchTab(this,'tab-apps')">App stores (2)</div>
+          <div class="tab-item" onclick="switchTab(this,'tab-leaks')">Credential leaks (1)</div>
+        </div>
+
+        {# Domains #}
+        <div id="tab-domains" class="tab-panel active">
+          <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1fr auto;gap:12px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);padding:0 14px 10px;border-bottom:1px solid var(--border);margin-bottom:8px">
+            <span>Domain</span><span>Type</span><span>Registered</span><span>SSL</span><span>Risk</span><span></span>
+          </div>
+          <div class="domain-row"><span style="font-family:monospace;color:var(--text-secondary)">inteldata-support.com</span><span style="color:var(--muted2)">Phishing</span><span style="color:var(--muted)">2d ago</span><span class="ssl-yes">SSL</span><span><span class="risk-badge critical">Critical</span></span><button class="btn btn-ghost btn-sm">Takedown</button></div>
+          <div class="domain-row"><span style="font-family:monospace;color:var(--text-secondary)">inteldatasoc.com</span><span style="color:var(--muted2)">Typosquat</span><span style="color:var(--muted)">12d ago</span><span class="ssl-no">None</span><span><span class="risk-badge high">High</span></span><button class="btn btn-ghost btn-sm">Takedown</button></div>
+          <div class="domain-row"><span style="font-family:monospace;color:var(--text-secondary)">intel-data.net</span><span style="color:var(--muted2)">Lookalike</span><span style="color:var(--muted)">18d ago</span><span class="ssl-no">None</span><span><span class="risk-badge medium">Medium</span></span><button class="btn btn-ghost btn-sm">Takedown</button></div>
+          <div class="domain-row"><span style="font-family:monospace;color:var(--text-secondary)">inteldata-ke.com</span><span style="color:var(--muted2)">Typosquat</span><span style="color:var(--muted)">22d ago</span><span class="ssl-no">None</span><span><span class="risk-badge low">Low</span></span><button class="btn btn-ghost btn-sm">Monitor</button></div>
+        </div>
+
+        {# Dark web #}
+        <div id="tab-dark" class="tab-panel">
+          <div class="threat-row">
+            <div class="threat-icon" style="background:rgba(139,92,246,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+            <div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span class="threat-title">Employee credential dump</span><span class="risk-badge high">High</span></div><div class="threat-desc">847 email/password combos found on BreachForums</div><div class="threat-meta"><span>BreachForums</span><span>6h ago</span><span>847 records</span></div></div>
+            <button class="btn btn-ghost btn-sm">View records</button>
+          </div>
+          <div class="threat-row">
+            <div class="threat-icon" style="background:rgba(245,158,11,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></div>
+            <div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span class="threat-title">Brand mention — threat actor post</span><span class="risk-badge medium">Medium</span></div><div class="threat-desc">"{{ membership.tenant.name }}" mentioned in a Tor forum post discussing MSSP targets</div><div class="threat-meta"><span>RaidForums mirror</span><span>2d ago</span></div></div>
+            <button class="btn btn-ghost btn-sm">View post</button>
+          </div>
+          <div class="threat-row">
+            <div class="threat-icon" style="background:rgba(59,130,246,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+            <div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span class="threat-title">Source code mention</span><span class="risk-badge low">Low</span></div><div class="threat-desc">Snippet referencing {{ membership.tenant.name }} internal API key found on Pastebin</div><div class="threat-meta"><span>Pastebin</span><span>4d ago</span></div></div>
+            <button class="btn btn-ghost btn-sm">Investigate</button>
+          </div>
+        </div>
+
+        {# Social #}
+        <div id="tab-social" class="tab-panel">
+          <div class="threat-row"><div class="threat-icon" style="background:rgba(239,68,68,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M21 2H3v16h5v4l4-4h5l4-4V2z"/></svg></div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span class="threat-title">@IntelData_Official (Telegram)</span><span class="risk-badge critical">Critical</span></div><div class="threat-desc">Crypto giveaway scam — 2,400 followers</div><div class="threat-meta"><span>Telegram</span><span>3d ago</span></div></div><button class="btn btn-ghost btn-sm">Report</button></div>
+          <div class="threat-row"><div class="threat-icon" style="background:rgba(245,158,11,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><path d="M21 2H3v16h5v4l4-4h5l4-4V2z"/></svg></div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span class="threat-title">@IntelData_KE (X / Twitter)</span><span class="risk-badge high">High</span></div><div class="threat-desc">Impersonation account — takedown in review</div><div class="threat-meta"><span>X (Twitter)</span><span>7d ago</span></div></div><button class="btn btn-ghost btn-sm">Track</button></div>
+          <div class="threat-row"><div class="threat-icon" style="background:rgba(59,130,246,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M21 2H3v16h5v4l4-4h5l4-4V2z"/></svg></div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span class="threat-title">IntelData (Facebook page)</span><span class="risk-badge medium">Medium</span></div><div class="threat-desc">Fake page using your logo — 340 followers</div><div class="threat-meta"><span>Facebook</span><span>10d ago</span></div></div><button class="btn btn-ghost btn-sm">Report</button></div>
+        </div>
+
+        {# App stores #}
+        <div id="tab-apps" class="tab-panel">
+          <div class="threat-row"><div class="threat-icon" style="background:rgba(245,158,11,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--amber)" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg></div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span class="threat-title">IntelData SOC Monitor (Play Store)</span><span class="risk-badge high">High</span></div><div class="threat-desc">Malicious app impersonating your product — 1,200 installs</div><div class="threat-meta"><span>Google Play</span><span>8d ago</span></div></div><button class="btn btn-ghost btn-sm">Takedown</button></div>
+          <div class="threat-row"><div class="threat-icon" style="background:rgba(59,130,246,.1)"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/></svg></div><div style="flex:1"><div style="display:flex;align-items:center;gap:8px;margin-bottom:3px"><span class="threat-title">IntelData Security (APKPure)</span><span class="risk-badge medium">Medium</span></div><div class="threat-desc">Rogue Android APK using your logo — 500+ downloads</div><div class="threat-meta"><span>APKPure</span><span>5d ago</span></div></div><button class="btn btn-ghost btn-sm">Takedown</button></div>
+        </div>
+
+        {# Credential leaks #}
+        <div id="tab-leaks" class="tab-panel">
+          <div style="background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+            <div>
+              <div style="font-size:13px;font-weight:600;color:var(--red)">847 credentials exposed</div>
+              <div style="font-size:12px;color:var(--muted)">Found on BreachForums 6 hours ago. Recommend forcing password resets immediately.</div>
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-left:auto;flex-shrink:0" onclick="showToast('Password resets triggered','success',2000)">Force reset all</button>
+          </div>
+          <table class="tbl">
+            <thead>
+              <tr><th>Email</th><th>Hash type</th><th>Risk</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-family:monospace;font-size:12px">john.doe@{{ membership.tenant.schema_name }}.co.ke</td>
+                <td style="font-size:12px;color:var(--muted2)">MD5</td>
+                <td><span class="risk-badge high">High</span></td>
+                <td><button class="btn btn-ghost btn-sm">Reset</button></td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px">mary.wanjiku@{{ membership.tenant.schema_name }}.co.ke</td>
+                <td style="font-size:12px;color:var(--red);font-weight:600">Plaintext</td>
+                <td><span class="risk-badge critical">Critical</span></td>
+                <td><button class="btn btn-ghost btn-sm">Reset</button></td>
+              </tr>
+              <tr>
+                <td style="font-family:monospace;font-size:12px">admin@{{ membership.tenant.schema_name }}.co.ke</td>
+                <td style="font-size:12px;color:var(--muted2)">Bcrypt</td>
+                <td><span class="risk-badge high">High</span></td>
+                <td><button class="btn btn-ghost btn-sm">Reset</button></td>
+              </tr>
+              <tr>
+                <td colspan="4" style="text-align:center;padding:12px;font-size:12px;color:var(--muted)">
+                  + 844 more records &mdash; <a href="#" style="color:var(--accent)">download full list</a>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast">
+  <div class="toast-icon success"></div>
+  <span id="toast-msg">Done</span>
+</div>
+
+<script>
+function switchTab(el, id) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+</script>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/settings/main.js' %}" type="module"></script>
+{% endblock %}

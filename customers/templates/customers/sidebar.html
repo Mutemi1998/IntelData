@@ -1,0 +1,156 @@
+{% comment %}
+   ════════════════════════════════════════════════════════
+   SIDEBAR NAVIGATION
+   ════════════════════════════════════════════════════════
+{% endcomment %}
+
+<aside class="sidebar" id="sidebar">
+
+  {# ── Logo ── #}
+  <div class="sidebar-logo">
+    <div class="logo-icon">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2">
+        <path d="M12 2L3 7l9 5 9-5-9-5z"/>
+        <path d="M3 17l9 5 9-5"/>
+        <path d="M3 12l9 5 9-5"/>
+      </svg>
+    </div>
+    <div>
+      <div class="logo-name">IntelData</div>
+      <div class="logo-tag">SOC Platform</div>
+    </div>
+  </div>
+
+  {# ── Back link ── #}
+  <a href="{% url 'dashboard' %}" class="sidebar-back-link">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="15 18 9 12 15 6"/>
+    </svg>
+    Back to dashboard
+  </a>
+
+  {# ── Nav ── #}
+  <nav class="sidebar-nav">
+
+    <div class="nav-section">
+      <div class="nav-label">Account</div>
+
+      <a class="nav-link active" onclick="showSection('profile')" data-section="profile">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        Organisation profile
+      </a>
+
+      <a class="nav-link" onclick="showSection('billing')" data-section="billing">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="4" width="22" height="16" rx="2"/>
+          <line x1="1" y1="10" x2="23" y2="10"/>
+        </svg>
+        Billing & subscription
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Security</div>
+
+      <a class="nav-link" onclick="showSection('wazuh')" data-section="wazuh">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Wazuh agents
+        <span class="nav-dot success"></span>
+      </a>
+
+      <a class="nav-link" onclick="showSection('vulnerabilities')" data-section="vulnerabilities">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+        Vulnerability scans
+        <span class="nav-dot warning"></span>
+      </a>
+
+      {# brand — showSection('brand') maps to #sec-brand #}
+      <a class="nav-link" onclick="showSection('brand')" data-section="brand">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+        </svg>
+        Brand protection
+        {% if brand_threats %}
+        <span class="nav-badge" style="margin-left:auto;background:rgba(239,68,68,.15);color:var(--red);font-size:10px;font-weight:700;padding:1px 6px;border-radius:10px">{{ brand_threats }}</span>
+        {% endif %}
+      </a>
+
+      <a class="nav-link" onclick="showSection('alerts')" data-section="alerts">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+          <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        Alert rules
+      </a>
+
+      <a class="nav-link" onclick="showSection('threat-intelligence')" data-section="threat-intelligence">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+        Threat intelligence
+      </a>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Operations</div>
+
+      <a class="nav-link" onclick="showSection('users')" data-section="users">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        Users & roles
+      </a>
+
+      <a class="nav-link" onclick="showSection('integrations')" data-section="integrations">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="18" cy="18" r="3"/>
+          <circle cx="6" cy="6" r="3"/>
+          <path d="M13 6h3a2 2 0 0 1 2 2v7"/>
+          <line x1="6" y1="9" x2="6" y2="21"/>
+        </svg>
+        Integrations
+      </a>
+
+      <a class="nav-link" onclick="showSection('notifications')" data-section="notifications">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2A19.79 19.79 0 0 1 2 4.18A2 2 0 0 1 4.08 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 6.64 6.64A2 2 0 0 1 20 9.08z"/>
+        </svg>
+        Notifications
+      </a>
+
+      <a class="nav-link" onclick="showSection('audit')" data-section="audit">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+        </svg>
+        Audit log
+      </a>
+    </div>
+
+  </nav>
+
+  {# ── Tenant chip ── #}
+  <div class="sidebar-footer">
+    <div class="tenant-chip">
+      <div class="tenant-avatar">{{ membership.tenant.name|slice:":2"|upper }}</div>
+      <div>
+        <div class="tenant-name">{{ membership.tenant.name }}</div>
+        <div class="tenant-plan">
+          {% if subscription %}{{ subscription.plan.name }}{% else %}Trial{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+</aside>
